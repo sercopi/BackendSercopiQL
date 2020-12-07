@@ -1,0 +1,151 @@
+"A date string with format `Y-m-d`, e.g. `2011-05-23`."
+scalar Date @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\Date")
+
+"A datetime string with format `Y-m-d H:i:s`, e.g. `2018-05-23 13:43:32`."
+scalar DateTime
+    @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
+
+type Query {
+    users: [User!]! @paginate(defaultCount: 10)
+    user(id: ID @eq): User @find
+    genres: [Genre] @all
+    manga(id: ID @eq): Manga @find
+    mangasByGenre(
+        genre: String! @where(operator: "like")
+        name: String @where(operator: "like")
+    ): [Manga!]!
+        @paginate(
+            type: "paginator"
+            defaultCount: 30
+            maxCount: 100
+            model: Manga
+        )
+    novel(id: ID @eq): Novel @find
+    novelsByGenre(genre: String! @where(operator: "like")): [Novel!]!
+        @paginate(
+            type: "paginator"
+            defaultCount: 10
+            maxCount: 100
+            model: Novel
+        )
+
+    mangaByName(searchParam: String): [Manga!]!
+        @paginate(
+            type: "paginator"
+            defaultCount: 10
+            maxCount: 100
+            model: Manga
+        )
+    novelByName(searchParam: String): [Novel!]!
+        @paginate(
+            type: "paginator"
+            defaultCount: 10
+            maxCount: 100
+            model: Novel
+        )
+    mangaByNameAndGenre(
+        name: String @where(operator: "like")
+        genre: String @where(operator: "like")
+        sortBy: String
+    ): [Manga!]!
+        @paginate(
+            type: "paginator"
+            defaultCount: 10
+            maxCount: 100
+            model: Manga
+        )
+    commentsByResource(
+        resourceID: ID!
+        resourceType: String!
+        user_id: ID
+    ): [Comment!]!
+}
+type Mutation {
+    createCommentMutation(
+        comment: String!
+        resourceID: ID!
+        resourceType: String!
+        userID: ID!
+        responseCommentID: ID
+    ): [Comment!]!
+    deleteCommentMutation(
+        commentID: ID!
+        userID: ID!
+        resourceID: ID!
+        resourceType: String!
+    ): [Comment!]!
+    updateCommentMutation(
+        commentID: ID!
+        userID: ID!
+        comment: String!
+        resourceID: ID!
+        resourceType: String!
+    ): [Comment!]!
+    likeCommentMutation(
+        userID: ID!
+        commentID: ID!
+        resourceID: ID!
+        resourceType: String!
+    ): [Comment!]!
+    dislikeCommentMutation(
+        userID: ID!
+        commentID: ID!
+        resourceID: ID!
+        resourceType: String!
+    ): [Comment!]!
+    rateResourceMutation(
+        userID: ID!
+        resourceID: ID!
+        resourceType: String!
+        rating: Int!
+    ): Manga
+}
+
+type User {
+    id: ID!
+    name: String!
+    email: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+type Manga {
+    id: ID!
+    name: String!
+    imageInfo: String
+    genre: String
+    author: String
+    status: String
+    chapters: String
+    score: String
+    artist: String
+    alternativeTitle: String
+    type: String
+    synopsis: String
+}
+type Novel {
+    id: ID!
+    name: String!
+    genre: String
+    synopsis: String
+}
+type Genre {
+    id: ID!
+    genre: String!
+}
+type Comment {
+    id: ID!
+    comment: String
+    user_id: ID!
+    commentable_id: ID!
+    commentable_type: String
+    created_at: DateTime
+    updated_at: DateTime
+    user: User
+    comments: [Comment!]! @hasMany
+    likes: [Like]
+}
+type Like {
+    id: ID!
+    like: Int!
+    user_id: ID!
+}
